@@ -88,11 +88,20 @@ impl Scanner {
         }
     }
 
-    /// Adds a new token with the given tok_type to the list of tokens.
+    /// Adds a token of the specified type to the list of tokens.
     ///
-    /// The value of the token is the next character in the source code
-    /// after the current position. The new token is created with the
-    /// Token::new() method and pushed to the end of the tokens vector.
+    /// Retrieves the value for the token from the input stream using the `next` method,
+    /// creates a new token with the provided token type and the retrieved value,
+    /// and appends it to the list of tokens.
+    ///
+    /// # Arguments
+    ///
+    /// * `token_type` - The type of token to add.
+    /// # Example
+    ///
+    /// ```
+    /// self.add_token(TokenType::SLASH);
+    /// ```
     fn add_token(&mut self, token_type: TokenType) {
         let value = self.next();
         self.tokens.push(Token::new(
@@ -105,14 +114,44 @@ impl Scanner {
     }
 
     /// Returns true if the next character in the source matches the
-    /// specified character, false otherwise.If the end of the source
+    /// specified character, false otherwise. If the end of the source
     /// is reached, returns false.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// self.peek('b');
+    /// ```
+    ///
+    /// # Arguments
+    ///
+    /// * `c` - The character to compare against the next character in the source.
+    ///
+    /// # Returns
+    ///
+    /// `true` if the next character in the source matches the specified character, `false` otherwise.
     fn peek(&mut self, c: char) -> bool {
         !self.is_eof()
             && self.position + 1 < self.source.len()
             && self.source[self.position + 1] == c
     }
 
+    /// Adds a token based on a conditional check on the next character in the source.
+    ///
+    /// If the next character in the source matches the `compare` character, adds a token of type `token_type_true`.
+    /// Otherwise, adds a token of type `token_type_false`.
+    ///
+    /// # Arguments
+    ///
+    /// * `compare` - The character to compare against the next character in the source.
+    /// * `token_type_true` - The type of token to add if the condition is true.
+    /// * `token_type_false` - The type of token to add if the condition is false.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// self.add_conditional_token('=', TokenType::Equal, TokenType::Identifier);
+    /// ```
     fn add_conditional_token(
         &mut self,
         compare: char,
@@ -165,12 +204,9 @@ impl Scanner {
         }
     }
 
-    /// This function extracts a string token from the input and updates
-    /// the tokenizer state accordingly. It scans the input for the end
-    /// of the string while handling newline characters appropriately.
-    /// If the end of the input is reached before the end of the string
-    /// is found, it returns a Lexer Error. If the string is successfully
-    /// parsed, a string token is added to the tokenizer state.
+    /// Moves the lexer position to the next line in the source.
+    ///
+    /// Increments the `line` counter and resets the `offset` to 0.
     // TODO: Add check for new line
     fn string(&mut self) -> Result<(), ()> {
         self.next();

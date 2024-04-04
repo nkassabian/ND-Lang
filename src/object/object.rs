@@ -7,7 +7,7 @@ use std::{
 // TODO: Seprate floating point with int
 #[derive(Debug, Clone, PartialEq)]
 pub enum Object {
-    Num(i32),
+    Num(i32), //TODO: Make generic
     Str(String),
     Bool(bool),
     Nil,

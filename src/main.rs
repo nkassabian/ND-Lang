@@ -1,11 +1,20 @@
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 
+use expressions::expr::Expr;
+use parser::parser::Parser;
 use scanner::scanner::Scanner;
 
 mod tokens {
     pub(crate) mod token;
     pub(crate) mod token_type;
+}
+mod expressions {
+    pub(crate) mod expr;
+}
+
+mod parser {
+    pub(crate) mod parser;
 }
 mod object {
     pub(crate) mod object;
@@ -53,19 +62,23 @@ impl Cedar {
         let mut scanner = Scanner::new(source.chars().collect(), file_name);
         let tokens = scanner.scan_tokens();
 
-        Ok(for token in tokens.unwrap().clone() {
-            println!("{:?}", token);
-        })
+        // Ok(for token in tokens.unwrap().clone() {
+        //     println!("{:?}", token);
+        // })
 
-        // let mut parser = Parser::new(tokens.unwrap().clone());
-        // //let mut statements: Vec<Stmt> = parser.parse().unwrap();
+        let mut parser = Parser::new(tokens.unwrap().clone());
+        let result = parser.parse();
+        let mut statements: Expr = result;
+
+        println!("{}", statements);
+
         // match parser.parse() {
         //     Ok(statements) => {
         //         self.interpreter.interpret(&statements);
         //     }
         //     Err(error) => error.report(),
         // }
-        // Ok(())
+        Ok(())
     }
 }
 
