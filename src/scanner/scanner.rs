@@ -303,7 +303,7 @@ impl Scanner {
             }
         };
         self.add_string_token(
-            Object::Num(number),
+            Object::Num(number.to_string()),
             TokenType::NUMBER,
             self.source[self.current..self.position].iter().collect(),
         );
