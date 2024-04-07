@@ -1,10 +1,6 @@
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 
-#[macro_use]
-extern crate lazy_static;
-
-use ast::expr::Expr;
 use parser::parser::Parser;
 use scanner::scanner::Scanner;
 
@@ -37,7 +33,7 @@ impl Cedar {
 
     fn run_file(&mut self, path: &str) -> io::Result<()> {
         let buf = std::fs::read_to_string(path)?;
-        if self.run(buf, path.to_string()).is_err() {
+        if self.run(buf).is_err() {
             // Ignore: error was already reported
             std::process::exit(65);
         }
@@ -54,7 +50,7 @@ impl Cedar {
                 if line.is_empty() {
                     break;
                 }
-                let _ = self.run(line, "Prompt Error".to_string());
+                let _ = self.run(line);
             } else {
                 break;
             }
@@ -63,8 +59,8 @@ impl Cedar {
         }
     }
 
-    fn run(&mut self, source: String, file_name: String) -> Result<(), ()> {
-        let mut scanner = Scanner::new(source.chars().collect(), file_name);
+    fn run(&mut self, source: String) -> Result<(), ()> {
+        let mut scanner = Scanner::new(source.chars().collect());
         let tokens = scanner.scan_tokens();
 
         // Ok(for token in tokens.unwrap().clone() {

@@ -11,12 +11,12 @@ pub struct Scanner {
     position: usize,
     offset: usize,
     line: usize,
-    file_name: String,
+    // file_name: String,
     current: usize,
 }
 
 impl Scanner {
-    pub fn new(source: Vec<char>, file_name: String) -> Self {
+    pub fn new(source: Vec<char>) -> Self {
         return Self {
             source,
             tokens: Vec::new(),
@@ -24,7 +24,7 @@ impl Scanner {
             line: 0,
             offset: 0,
             current: 0,
-            file_name,
+            // file_name,
         };
     }
 
@@ -39,7 +39,7 @@ impl Scanner {
         while !self.is_eof() {
             match self.scan_token() {
                 Ok(_) => {}
-                Err(e) => {
+                Err(_) => {
                     break;
                 }
             }

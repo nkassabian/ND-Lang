@@ -1,5 +1,3 @@
-use std::string;
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TokenType {
     // Single-character tokens.
@@ -44,6 +42,8 @@ pub enum TokenType {
     OR,
     PRINT,
     RETURN,
+    LET,
+    //CONST,
     // SUPER,
     // THIS,
     TRUE,

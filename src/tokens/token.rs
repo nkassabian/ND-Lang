@@ -74,6 +74,7 @@ pub static KEYWORDS: Lazy<HashMap<String, TokenType>> = Lazy::new(|| {
     map.insert(String::from("null"), TokenType::NIL);
     map.insert(String::from("true"), TokenType::TRUE);
     map.insert(String::from("false"), TokenType::FALSE);
+    map.insert(String::from("let"), TokenType::LET);
 
     map
 });
