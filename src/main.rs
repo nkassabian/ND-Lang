@@ -1,6 +1,9 @@
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 
+#[macro_use]
+extern crate lazy_static;
+
 use ast::expr::Expr;
 use parser::parser::Parser;
 use scanner::scanner::Scanner;

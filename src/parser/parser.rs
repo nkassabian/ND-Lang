@@ -1,98 +1,74 @@
-use core::panic;
-use std::string;
-
-use crate::parser::expressions::*;
+use super::lookups::{
+    create_led_lookups, create_nud_lookups, led_handler, nud_handler, BP_TABLE, PREC,
+};
+use crate::ast::expr::Expr;
+use crate::object::object::Object;
 use crate::tokens::token::{self, Token};
 use crate::tokens::token_type::TokenType;
-use crate::{ast::expr::Expr, object::object::Object};
+use std::collections::HashMap;
 
-use super::lookups::{BP_TABLE, PREC};
 pub struct Parser {
     tokens: Vec<Token>,
     current: usize,
+    nud_lookup: HashMap<TokenType, nud_handler>,
+    led_lookup: HashMap<TokenType, led_handler>,
 }
 
-//TODO: LOOK INTO ITERATORS
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Self {
         Self {
             tokens,
-            current: 0, // Assigning initial value to current field
+            current: 0,
+            nud_lookup: create_nud_lookups(),
+            led_lookup: create_led_lookups(),
         }
     }
 
     pub fn parse(&mut self) -> Expr {
-        self.tokens.pop();
-        return self.parse_expr(PREC::defalt_bp);
+        self.tokens.pop(); // Assuming popping the last token is intentional
+        self.parse_expr(PREC::DefaltBp)
     }
 
     pub fn parse_expr(&mut self, bp: PREC) -> Expr {
-        let mut cur_tok = self.at();
-        let mut left = self.handle_nud(cur_tok.clone()); // Assuming handle_nud is defined
-
-        if !self.is_eof() {
+        let token = self.at().clone();
+        let mut left = self.nud_lookup.get(&token.ttype).unwrap()(self);
+        while !self.is_eof()
+            && self
+                .peek_next_token_bp()
+                .map_or(false, |&next_bp| next_bp >= bp)
+        {
             self.advance();
+            let at = self.at();
+            left = self.led_lookup.get(&self.at().ttype).unwrap()(self, left);
         }
+        left
+    }
 
-        let value = unsafe {
-            BP_TABLE
-                .get(&self.at().ttype) // Assuming cur_tok has a field named Type representing the token type
-                .unwrap_or_else(|| panic!("NO WAY"))
-        };
-
-        while !self.is_eof() && value > &bp {
-            left = self.handle_led(left, bp); // Assuming handle_led is defined
+    pub fn peek_next_token_bp(&self) -> Option<&PREC> {
+        if self.current + 1 < self.tokens.len() {
+            let token_type = &self.tokens[self.current + 1].ttype;
+            return unsafe { BP_TABLE.get(&token_type) };
         }
-
-        left // Return the resulting expression
+        None
     }
 
-    pub fn handle_led(&mut self, left: Expr, bp: PREC) -> Expr {
-        let op = self.at();
-        let value = unsafe {
-            BP_TABLE
-                .get(&self.at().ttype) // Assuming cur_tok has a field named Type representing the token type
-                .unwrap_or_else(|| panic!("NO WAY"))
-        };
-        self.advance();
-
-        let right = self.parse_expr(*value);
-        return Expr::BinaryOp {
-            left: Box::new(left),
-            op: op,
-            right: Box::new(right),
-        };
+    pub fn is_eof(&self) -> bool {
+        self.current >= self.tokens.len()
     }
 
-    pub fn handle_nud(&mut self, token: Token) -> Expr {
-        match token.ttype {
-            TokenType::NUMBER => match token.literal {
-                Object::Num(num) => {
-                    return Expr::NumberLiteral(num);
-                }
-                _ => panic!("Invalid number"),
-            },
-            _ => todo!(),
-        }
-    }
-
-    //led and nud shouldnt compare
-
-    pub fn cur_tok_type(&mut self) -> TokenType {
-        return self.at().ttype;
-    }
-
-    pub fn is_eof(&mut self) -> bool {
-        return self.current >= (self.tokens.len() - 1);
-    }
-
-    pub fn advance(&mut self) -> &Token {
-        let cur_tok = &self.tokens[self.current];
+    pub fn advance(&mut self) {
         self.current += 1;
-        return cur_tok;
     }
 
-    pub fn at(&mut self) -> Token {
-        return self.tokens[self.current].clone();
+    pub fn at(&self) -> &Token {
+        &self.tokens[self.current]
+    }
+
+    pub fn expect(&mut self, expected_type: TokenType) {
+        let test = self.at();
+        if self.at().ttype != expected_type {
+            panic!("Expected token of type {:?}", expected_type);
+        }
+        self.advance();
     }
 }
