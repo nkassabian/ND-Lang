@@ -28,10 +28,11 @@ impl Parser {
         self.parse_expr(PREC::DefaltBp)
     }
 
+    ///Starts to parse the tokens inside our Parser
     pub fn parse_expr(&mut self, bp: PREC) -> Expr {
         let token = self.at().clone();
-        let mut left = self.nud_lookup.get(&token.ttype).unwrap()(self);
 
+        let mut left = self.nud_lookup.get(&token.ttype).unwrap()(self);
         while !self.is_eof() && self.token_bp().map_or(false, |&next_bp| next_bp >= bp) {
             left = self.led_lookup.get(&self.at().ttype).unwrap()(self, left);
         }

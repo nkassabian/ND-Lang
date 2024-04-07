@@ -11,7 +11,7 @@ pub enum PREC {
     DefaltBp = 0,
     Primary = 1,
     // Comma,
-    // Assignment,
+    Assignment = 3,
     // Logical,
     // Relational,
     Additive = 6,
@@ -26,12 +26,15 @@ pub enum PREC {
 pub static mut BP_TABLE: Lazy<HashMap<TokenType, PREC>> = Lazy::new(|| {
     let mut map = HashMap::new();
 
+    map.insert(TokenType::EQUAL, PREC::Assignment);
+
     map.insert(TokenType::NUMBER, PREC::Primary);
     map.insert(TokenType::STRING, PREC::Primary);
+    map.insert(TokenType::IDENTIFIER, PREC::Primary);
 
+    //Additive & mutiplicative
     map.insert(TokenType::PLUS, PREC::Additive);
     map.insert(TokenType::MINUS, PREC::Additive);
-
     map.insert(TokenType::STAR, PREC::Multiplicative);
     map.insert(TokenType::SLASH, PREC::Multiplicative);
     map.insert(TokenType::MODULO, PREC::Multiplicative);
@@ -44,6 +47,7 @@ pub static mut BP_TABLE: Lazy<HashMap<TokenType, PREC>> = Lazy::new(|| {
     // map.insert(TokenType::RIGHTPAREN, PREC::Group);
 
     map.insert(TokenType::EOF, PREC::DefaltBp);
+    map.insert(TokenType::PLUS, PREC::DefaltBp);
 
     map
 });
@@ -76,6 +80,7 @@ pub fn create_led_lookups() -> HashMap<TokenType, LedHandler> {
     map.insert(TokenType::SLASH, parse_binary_expr as LedHandler);
     map.insert(TokenType::MODULO, parse_binary_expr as LedHandler);
     map.insert(TokenType::POW, parse_binary_expr as LedHandler);
+    map.insert(TokenType::EQUAL, parse_assignment_expr as LedHandler);
     map
 }
 
@@ -92,20 +97,35 @@ fn parse_num(parser: &mut Parser) -> Expr {
     let token = parser.at().clone();
     parser.advance();
     // Implementation
-    Expr::Number(token.literal.to_string())
+    Expr::Number(token.lexeme.to_string())
 }
 
 fn parse_string(parser: &mut Parser) -> Expr {
     // Implementation
-    Expr::String(parser.at().clone().literal.to_string())
+    let token = parser.at().clone();
+    parser.advance();
+    // Implementation
+    Expr::String(token.lexeme.to_string())
+}
+
+fn parse_assignment_expr(parser: &mut Parser, left: Expr) -> Expr {
+    parser.advance();
+    let rhs = parser.parse_expr(PREC::DefaltBp);
+
+    return Expr::Assignment {
+        assignee: Box::new(left),
+        assigned: Box::new(rhs),
+    };
 }
 
 fn parse_identifier(parser: &mut Parser) -> Expr {
     // Implementation
-    Expr::Identifier(parser.at().clone().lexeme.to_string())
+    let token = parser.at().clone();
+    parser.advance();
+    // Implementation
+    Expr::Identifier(token.lexeme.to_string())
 }
 
-//TODO: Please fix this grouping issue.
 fn parse_grouping_expr(parser: &mut Parser) -> Expr {
     parser.expect(TokenType::LEFTPAREN);
     let group = parser.parse_expr(PREC::DefaltBp);

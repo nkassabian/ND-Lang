@@ -1,4 +1,5 @@
 use core::fmt;
+use std::fmt::write;
 
 use crate::tokens::token::Token;
 
@@ -14,6 +15,10 @@ pub enum Expr {
         left: Box<Expr>,
         op: Token,
         right: Box<Expr>,
+    },
+    Assignment {
+        assignee: Box<Expr>,
+        assigned: Box<Expr>,
     },
     Grouping {
         group: Box<Expr>,
@@ -38,7 +43,9 @@ impl fmt::Display for Expr {
             Expr::Identifier(s) => write!(f, "{}", s),
             Expr::BinaryOp { left, op, right } => write!(f, "({} {} {})", left, op.lexeme, right),
             Expr::Grouping { group } => write!(f, "({})", group),
-            // Add more match arms for other node types if needed
+            Expr::Assignment { assignee, assigned } => {
+                write!(f, "Assigned {}: {}", assignee, assigned)
+            } // Add more match arms for other node types if needed
         }
     }
 }
