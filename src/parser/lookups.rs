@@ -12,7 +12,7 @@ pub enum PREC {
     Primary = 1,
     // Comma,
     Assignment = 3,
-    // Logical,
+    Logical = 4,
     // Relational,
     Additive = 6,
     Multiplicative = 7,
@@ -38,6 +38,9 @@ pub static mut BP_TABLE: Lazy<HashMap<TokenType, PREC>> = Lazy::new(|| {
     map.insert(TokenType::STAR, PREC::Multiplicative);
     map.insert(TokenType::SLASH, PREC::Multiplicative);
     map.insert(TokenType::MODULO, PREC::Multiplicative);
+
+    map.insert(TokenType::AND, PREC::Logical);
+    map.insert(TokenType::OR, PREC::Logical);
 
     map.insert(TokenType::POW, PREC::Power);
 
@@ -74,6 +77,9 @@ pub fn create_led_lookups() -> HashMap<TokenType, LedHandler> {
     let mut map = HashMap::new();
 
     // Logical
+    map.insert(TokenType::AND, parse_binary_expr as LedHandler);
+    map.insert(TokenType::OR, parse_binary_expr as LedHandler);
+
     map.insert(TokenType::PLUS, parse_binary_expr as LedHandler);
     map.insert(TokenType::MINUS, parse_binary_expr as LedHandler);
     map.insert(TokenType::STAR, parse_binary_expr as LedHandler);
