@@ -5,7 +5,7 @@ use core::fmt;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Token {
     pub ttype: TokenType,
     pub lexeme: String,
@@ -75,6 +75,8 @@ pub static KEYWORDS: Lazy<HashMap<String, TokenType>> = Lazy::new(|| {
     map.insert(String::from("true"), TokenType::TRUE);
     map.insert(String::from("false"), TokenType::FALSE);
     map.insert(String::from("let"), TokenType::LET);
+    map.insert(String::from("const"), TokenType::CONST);
+    map.insert(String::from("i32"), TokenType::I32);
 
     map
 });

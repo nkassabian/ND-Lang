@@ -3,10 +3,18 @@ use std::fmt::write;
 
 use crate::tokens::token::Token;
 
+#[derive(Debug, PartialEq)] // Add PartialEq derive
 pub enum Expr {
+    // --------------------
+    // Literal Expressions
+    // --------------------
     Number(String),
     String(String),
     Identifier(String),
+
+    // --------------------
+    // Complex Expressions
+    // --------------------
     Unary {
         op: Token,
         right: Box<Expr>,
@@ -18,6 +26,7 @@ pub enum Expr {
     },
     Assignment {
         assignee: Box<Expr>,
+        op: Token,
         assigned: Box<Expr>,
     },
     Grouping {
@@ -43,8 +52,12 @@ impl fmt::Display for Expr {
             Expr::Identifier(s) => write!(f, "{}", s),
             Expr::BinaryOp { left, op, right } => write!(f, "({} {} {})", left, op.lexeme, right),
             Expr::Grouping { group } => write!(f, "({})", group),
-            Expr::Assignment { assignee, assigned } => {
-                write!(f, "Assigned {}: {}", assignee, assigned)
+            Expr::Assignment {
+                assignee,
+                op,
+                assigned,
+            } => {
+                write!(f, "Assigned {} {} {}", assignee, op.lexeme, assigned)
             } // Add more match arms for other node types if needed
         }
     }

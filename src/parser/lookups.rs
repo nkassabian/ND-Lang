@@ -2,13 +2,16 @@ use std::collections::HashMap;
 
 use once_cell::sync::Lazy;
 
-use crate::{ast::expr::Expr, tokens::token_type::TokenType};
+use crate::{
+    ast::{expr::Expr, stmt::Stmt},
+    tokens::token_type::TokenType,
+};
 
 use super::parser::Parser;
 
 #[derive(PartialEq, PartialOrd, Clone, Copy)]
 pub enum PREC {
-    DefaltBp = 0,
+    DefaultBp = 0,
     Primary = 1,
     // Comma,
     Assignment = 3,
@@ -25,70 +28,46 @@ pub enum PREC {
 
 pub static mut BP_TABLE: Lazy<HashMap<TokenType, PREC>> = Lazy::new(|| {
     let mut map = HashMap::new();
-
     map.insert(TokenType::EQUAL, PREC::Assignment);
-
+    map.insert(TokenType::PLUSEQUALS, PREC::Assignment);
+    map.insert(TokenType::MINUSEQUALS, PREC::Assignment);
     map.insert(TokenType::NUMBER, PREC::Primary);
     map.insert(TokenType::STRING, PREC::Primary);
     map.insert(TokenType::IDENTIFIER, PREC::Primary);
-
-    //Additive & mutiplicative
     map.insert(TokenType::PLUS, PREC::Additive);
     map.insert(TokenType::MINUS, PREC::Additive);
     map.insert(TokenType::STAR, PREC::Multiplicative);
     map.insert(TokenType::SLASH, PREC::Multiplicative);
     map.insert(TokenType::MODULO, PREC::Multiplicative);
-
     map.insert(TokenType::LESS, PREC::Relational);
     map.insert(TokenType::GREATER, PREC::Relational);
     map.insert(TokenType::LESSEQUAL, PREC::Relational);
     map.insert(TokenType::GREATEREQUAL, PREC::Relational);
-
     map.insert(TokenType::OR, PREC::Logical);
-
     map.insert(TokenType::POW, PREC::Power);
-
     map.insert(TokenType::BANG, PREC::Unary);
-
     map.insert(TokenType::LEFTPAREN, PREC::Group);
-    // map.insert(TokenType::RIGHTPAREN, PREC::Group);
-
-    map.insert(TokenType::EOF, PREC::DefaltBp);
-    map.insert(TokenType::PLUS, PREC::DefaltBp);
-
+    map.insert(TokenType::EOF, PREC::DefaultBp);
     map
 });
 
 pub type LedHandler = fn(&mut Parser, Expr) -> Expr;
 pub type NudHandler = fn(&mut Parser) -> Expr;
-// pub type stmt_handler = fn(&mut Parser) -> Stmt;
+pub type StmtHandler = fn(&mut Parser) -> Stmt;
 
 pub fn create_nud_lookups() -> HashMap<TokenType, NudHandler> {
     let mut map = HashMap::new();
-
-    // Populate the map
     map.insert(TokenType::NUMBER, parse_num as NudHandler);
     map.insert(TokenType::STRING, parse_string as NudHandler);
     map.insert(TokenType::IDENTIFIER, parse_identifier as NudHandler);
     map.insert(TokenType::MINUS, parse_unary as NudHandler);
     map.insert(TokenType::BANG, parse_unary as NudHandler);
-
     map.insert(TokenType::LEFTPAREN, parse_grouping_expr as NudHandler);
     map
 }
 
 pub fn create_led_lookups() -> HashMap<TokenType, LedHandler> {
     let mut map = HashMap::new();
-
-    // Logical
-    map.insert(TokenType::AND, parse_binary_expr as LedHandler);
-    map.insert(TokenType::OR, parse_binary_expr as LedHandler);
-
-    map.insert(TokenType::GREATER, parse_binary_expr as LedHandler);
-    map.insert(TokenType::LESS, parse_binary_expr as LedHandler);
-    map.insert(TokenType::LESSEQUAL, parse_binary_expr as LedHandler);
-    map.insert(TokenType::GREATEREQUAL, parse_binary_expr as LedHandler);
-
     map.insert(TokenType::PLUS, parse_binary_expr as LedHandler);
     map.insert(TokenType::MINUS, parse_binary_expr as LedHandler);
     map.insert(TokenType::STAR, parse_binary_expr as LedHandler);
@@ -96,17 +75,25 @@ pub fn create_led_lookups() -> HashMap<TokenType, LedHandler> {
     map.insert(TokenType::MODULO, parse_binary_expr as LedHandler);
     map.insert(TokenType::POW, parse_binary_expr as LedHandler);
     map.insert(TokenType::EQUAL, parse_assignment_expr as LedHandler);
+    map.insert(TokenType::PLUSEQUALS, parse_assignment_expr as LedHandler);
+    map.insert(TokenType::MINUSEQUALS, parse_assignment_expr as LedHandler);
+    map.insert(TokenType::AND, parse_binary_expr as LedHandler);
+    map.insert(TokenType::OR, parse_binary_expr as LedHandler);
+    map.insert(TokenType::GREATER, parse_binary_expr as LedHandler);
+    map.insert(TokenType::LESS, parse_binary_expr as LedHandler);
+    map.insert(TokenType::LESSEQUAL, parse_binary_expr as LedHandler);
+    map.insert(TokenType::GREATEREQUAL, parse_binary_expr as LedHandler);
     map
 }
 
-// pub fn create_stmt_lookups() -> HashMap<TokenType, stmt_handler> {
-//     let mut map = HashMap::new();
+pub fn create_stmt_lookups() -> HashMap<TokenType, StmtHandler> {
+    let mut map = HashMap::new();
 
-//     // Populate the map
-//     map.insert(TokenType::LET, parse_var_decl_stmt as stmt_handler);
+    // Populate the map
+    map.insert(TokenType::LET, parse_var_decl_stmt as StmtHandler);
 
-//     map
-// }
+    map
+}
 
 fn parse_num(parser: &mut Parser) -> Expr {
     let token = parser.at().clone();
@@ -124,11 +111,12 @@ fn parse_string(parser: &mut Parser) -> Expr {
 }
 
 fn parse_assignment_expr(parser: &mut Parser, left: Expr) -> Expr {
-    parser.advance();
-    let rhs = parser.parse_expr(PREC::DefaltBp);
+    let op = parser.advance_and_get_current();
+    let rhs = parser.parse_expr(PREC::DefaultBp);
 
     return Expr::Assignment {
         assignee: Box::new(left),
+        op: op.clone(),
         assigned: Box::new(rhs),
     };
 }
@@ -143,7 +131,7 @@ fn parse_identifier(parser: &mut Parser) -> Expr {
 
 fn parse_grouping_expr(parser: &mut Parser) -> Expr {
     parser.expect(TokenType::LEFTPAREN);
-    let group = parser.parse_expr(PREC::DefaltBp);
+    let group = parser.parse_expr(PREC::DefaultBp);
     parser.expect(TokenType::RIGHTPAREN);
     Expr::Grouping {
         group: Box::new(group),
@@ -174,36 +162,35 @@ fn parse_binary_expr(parser: &mut Parser, left: Expr) -> Expr {
 }
 
 //TODO: Make function that increments current, and returns the current before the incrementation.
-// fn parse_var_decl_stmt(parser: &mut Parser) -> Stmt {
-//     let start_token = parser.at();
-//     parser.advance();
-//     let is_constant = start_token.clone().ttype == TokenType::CONST;
-//     let symbol_name = parser.at();
+fn parse_var_decl_stmt(parser: &mut Parser) -> Stmt {
+    let start_token = parser.advance_and_get_current();
+    let is_constant = start_token.clone().ttype == TokenType::CONST;
+    let symbol_name = parser.advance_and_get_current().clone();
 
-//     // let explicit_type = if parser.at().ttype == TokenType::COLON {
-//     //     p.expect(lexer::TokenKind::COLON);
-//     //     Some(parse_type(p, PREC::DefaltBp))
-//     // } else {
-//     //     None
-//     // };
+    let explicit_type = if parser.at().ttype == TokenType::COLON {
+        parser.expect(TokenType::COLON);
+        Some(parser.advance_and_get_current())
+    } else {
+        None
+    };
 
-//     let assignment_value = if parser.at().ttype != TokenType::SEMICOLON {
-//         parser.expect(TokenType::EQUAL);
-//         Some(parser.parse_expr(PREC::Assignment))
-//     } else {
-//         None
-//     };
+    let assignment_value = if parser.at().ttype != TokenType::SEMICOLON {
+        parser.expect(TokenType::EQUAL);
+        Some(parser.parse_expr(PREC::Assignment))
+    } else {
+        None
+    };
 
-//     parser.expect(TokenType::SEMICOLON);
+    parser.expect(TokenType::SEMICOLON);
 
-//     if is_constant && assignment_value.is_none() {
-//         panic!("Cannot define constant variable without providing default value.")
-//     }
+    if is_constant && assignment_value.is_none() {
+        panic!("Cannot define constant variable without providing default value.")
+    }
 
-//     Stmt::VarDeclarationStmt {
-//         constant: is_constant,
-//         identifier: symbol_name.lexeme,
-//         AssignedValue: assignment_value.unwrap(),
-//         // explicit_type,
-//     }
-// }
+    Stmt::VarDeclarationStmt {
+        isConstant: is_constant,
+        Identifier: symbol_name.lexeme,
+        assignedValue: assignment_value.unwrap(),
+        explicitType: explicit_type,
+    }
+}

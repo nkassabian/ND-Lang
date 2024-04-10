@@ -1,5 +1,6 @@
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
+use std::result;
 
 use parser::parser::Parser;
 use scanner::scanner::Scanner;
@@ -10,6 +11,7 @@ mod tokens {
 }
 mod ast {
     pub(crate) mod expr;
+    pub mod stmt;
 }
 
 mod parser {
@@ -69,12 +71,14 @@ impl Cedar {
 
         // let expr = parse(tokens.unwrap().clone());
 
-        // Ok(())
         let mut parser = Parser::new(tokens.unwrap().clone());
         let result = parser.parse();
-        //let mut statements: Expr = result;
 
-        println!("{}", result);
+        for res in result {
+            println!("{}", res);
+        }
+
+        Ok(())
 
         // match parser.parse() {
         //     Ok(statements) => {
@@ -82,7 +86,7 @@ impl Cedar {
         //     }
         //     Err(error) => error.report(),
         // }
-        Ok(())
+        // Ok(())
     }
 }
 

@@ -1,5 +1,3 @@
-{}
+let foo = 45
+let bar = foo * 10;
 
-// test
-
-5 + 8 * > <

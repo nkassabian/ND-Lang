@@ -2,6 +2,7 @@
 pub enum TokenType {
     // Single-character tokens.
     LEFTPAREN,
+    COLON,
     RIGHTPAREN,
     LEFTBRACE,
     RIGHTBRACE,
@@ -24,6 +25,8 @@ pub enum TokenType {
     GREATEREQUAL,
     LESS,
     LESSEQUAL,
+    PLUSEQUALS,
+    MINUSEQUALS,
 
     // Literals.
     IDENTIFIER,
@@ -43,7 +46,8 @@ pub enum TokenType {
     PRINT,
     RETURN,
     LET,
-    //CONST,
+    CONST,
+    I32,
     // SUPER,
     // THIS,
     TRUE,
