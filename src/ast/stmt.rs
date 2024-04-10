@@ -65,7 +65,7 @@ impl fmt::Display for Stmt {
                 writeln!(f, "If Statement")?;
                 writeln!(f, "{}", condition)?;
                 writeln!(f, "{}", consequent)?;
-                writeln!(f, "{}", alternate.unwrap())?;
+                writeln!(f, "{}", alternate.as_ref().unwrap())?;
                 Ok(())
             }
         }
