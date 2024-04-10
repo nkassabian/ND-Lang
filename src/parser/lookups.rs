@@ -109,6 +109,7 @@ pub fn create_stmt_lookups() -> HashMap<TokenType, StmtHandler> {
     map.insert(TokenType::CONST, parse_var_decl_stmt as StmtHandler);
 
     map.insert(TokenType::LEFTBRACE, parse_block_stmt as StmtHandler);
+    map.insert(TokenType::IF, parse_if_stmt as StmtHandler);
 
     map
 }
@@ -230,9 +231,21 @@ fn parse_if_stmt(parser: &mut Parser) -> Stmt {
     parser.advance();
     let condition = parser.parse_expr(PREC::Assignment);
     let consequent = parser.parse_stmt();
+    let mut alternate = None; // Initialize alternate with None
 
-    return Stmt::IfStmt {
+    if parser.at().ttype == TokenType::ELSE {
+        parser.advance();
+
+        if parser.at().ttype == TokenType::IF {
+            alternate = Some(Box::new(parse_if_stmt(parser))); // Use Some() to wrap the alternate value
+        } else {
+            alternate = Some(Box::new(parse_block_stmt(parser))); // Use Some() to wrap the alternate value
+        }
+    }
+
+    Stmt::IfStmt {
         condition,
-        consequent,
-    };
+        consequent: Box::new(consequent),
+        alternate, // Use the initialized alternate value
+    }
 }

@@ -1,5 +1,4 @@
 use core::fmt;
-use std::fmt::write;
 
 use crate::tokens::token::Token;
 
@@ -33,15 +32,6 @@ pub enum Expr {
         group: Box<Expr>,
     }, // Add more node types as needed
 }
-
-// pub enum Stmt {
-//     VarDeclarationStmt {
-//         identifier: String,
-//         constant: bool,
-//         AssignedValue: Expr,
-//         // ExplicitType: TokenType,
-//     },
-// }
 
 impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

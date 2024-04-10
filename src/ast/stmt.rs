@@ -1,5 +1,5 @@
 use core::fmt;
-use std::string;
+use std::{fmt::write, string};
 
 use crate::tokens::{token::Token, token_type::TokenType};
 
@@ -21,6 +21,7 @@ pub enum Stmt {
     IfStmt {
         condition: Expr,
         consequent: Box<Stmt>,
+        alternate: Option<Box<Stmt>>,
     },
 }
 
@@ -59,8 +60,13 @@ impl fmt::Display for Stmt {
             Stmt::IfStmt {
                 condition,
                 consequent,
+                alternate,
             } => {
-                writeln!(f, "{{}}")?;
+                writeln!(f, "If Statement")?;
+                writeln!(f, "{}", condition)?;
+                writeln!(f, "{}", consequent)?;
+                writeln!(f, "{}", alternate.unwrap())?;
+                Ok(())
             }
         }
     }

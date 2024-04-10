@@ -1,12 +1,5 @@
-const foo = (45+5)*5^(6+10);
-
-let x = foo * 6 + 5;
-
-{
-    let insideBlock = foo * 6 + 5;
-    let insideBlock2 = insideBlock * 6 + 5;
-
-    {
-        let test2 = 45;
-    }
+if 5 >= 4 {
+    let foo = 100;
+} else if 3 > 2{
+  let foo = 100;
 }
