@@ -1,3 +1,5 @@
+use crate::errors::lexer_error::LexerError;
+use crate::errors::lexer_error::LexerErrorTypes;
 // use crate::tokens::token_type::TokenType;
 use crate::tokens::token::Token;
 use crate::tokens::token::KEYWORDS;
@@ -11,12 +13,12 @@ pub struct Scanner {
     position: usize,
     offset: usize,
     line: usize,
-    // file_name: String,
+    file_name: String,
     current: usize,
 }
 
 impl Scanner {
-    pub fn new(source: Vec<char>) -> Self {
+    pub fn new(source: Vec<char>, file_name: String) -> Self {
         return Self {
             source,
             tokens: Vec::new(),
@@ -24,7 +26,7 @@ impl Scanner {
             line: 0,
             offset: 0,
             current: 0,
-            // file_name,
+            file_name,
         };
     }
 
@@ -39,7 +41,8 @@ impl Scanner {
         while !self.is_eof() {
             match self.scan_token() {
                 Ok(_) => {}
-                Err(_) => {
+                Err(err) => {
+                    err.report();
                     break;
                 }
             }
@@ -208,7 +211,7 @@ impl Scanner {
     ///
     /// Increments the `line` counter and resets the `offset` to 0.
     // TODO: Add check for new line
-    fn string(&mut self) -> Result<(), ()> {
+    fn string(&mut self) -> Result<(), LexerError> {
         self.next();
         while !self.peek('"') && !self.is_eof() {
             self.next();
@@ -217,7 +220,13 @@ impl Scanner {
             }
         }
         if self.is_eof() {
-            // add unclosed string error
+            return Err(LexerError::new(
+                self.line,
+                self.offset,
+                LexerErrorTypes::UnexpectedEndOfString,
+                self.file_name.clone(),
+                self.source.clone(),
+            ));
         }
 
         self.next();
@@ -229,7 +238,6 @@ impl Scanner {
         self.add_string_token(Object::Str(value.clone()), TokenType::STRING, value);
         Ok(())
     }
-
     /// This function adds a new string token to the tokenizer state with
     /// the provided object type, token type, and string value. It creates
     /// a new Token instance and pushes it onto the tokens vector in the
@@ -295,15 +303,15 @@ impl Scanner {
 
         self.next();
         let value: String = self.source[self.current..self.position].iter().collect();
-        let number = match value.parse::<i32>() {
-            Ok(num) => num,
-            Err(_) => {
-                todo!()
-                //return invalid number error
-            }
-        };
+        // let number = match value.parse::<i32>() {
+        //     Ok(num) => num,
+        //     Err(_) => {
+        //         todo!()
+        //         //return invalid number error
+        //     }
+        // };
         self.add_string_token(
-            Object::Num(number.to_string()),
+            Object::Num(value.to_string()),
             TokenType::NUMBER,
             self.source[self.current..self.position].iter().collect(),
         );
@@ -377,7 +385,7 @@ impl Scanner {
         self.position += 1;
         self.offset += 1;
     }
-    fn scan_token(&mut self) -> Result<(), ()> {
+    fn scan_token(&mut self) -> Result<(), LexerError> {
         while !self.is_eof() {
             let c = self.at();
             self.current = self.position;
@@ -406,13 +414,19 @@ impl Scanner {
                 '"' => self.string()?,
                 _ => {
                     if self.is_digit(c) {
-                        self.number()?;
+                        self.number();
                     } else if self.is_alpha(c) {
                         self.identifier();
                     } else if c == '\n' || c == '\r' || c == '\r' {
                         self.empty_next();
                     } else {
-                        //return an error unexpected char
+                        return Err(LexerError::new(
+                            self.line,
+                            self.offset,
+                            LexerErrorTypes::UnexpectedCharacter(c),
+                            self.file_name.clone(),
+                            self.source.clone(),
+                        ));
                     }
                 }
             }

@@ -15,6 +15,13 @@ pub enum Stmt {
     ExpressionStmt {
         expression: Expr,
     },
+    BlockStmt {
+        Body: Vec<Stmt>,
+    },
+    IfStmt {
+        condition: Expr,
+        consequent: Box<Stmt>,
+    },
 }
 
 impl fmt::Display for Stmt {
@@ -32,7 +39,7 @@ impl fmt::Display for Stmt {
                     if *isConstant { "const " } else { "" },
                     Identifier,
                     if let Some(explicit_type) = explicitType {
-                        format!(": {}", explicit_type.lexeme)
+                        format!(": of type {}", explicit_type.lexeme)
                     } else {
                         String::new()
                     },
@@ -41,6 +48,19 @@ impl fmt::Display for Stmt {
             }
             Stmt::ExpressionStmt { expression } => {
                 write!(f, "{}", expression)
+            }
+            Stmt::BlockStmt { Body } => {
+                writeln!(f, "{{")?;
+                for stmt in Body {
+                    writeln!(f, "{}", stmt)?;
+                }
+                write!(f, "}}")
+            }
+            Stmt::IfStmt {
+                condition,
+                consequent,
+            } => {
+                writeln!(f, "{{}}")?;
             }
         }
     }

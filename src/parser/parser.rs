@@ -63,13 +63,13 @@ impl Parser {
         left
     }
 
-    // pub fn peek_next_token_type(&self) -> Option<&TokenType> {
-    //     if self.current + 1 < self.tokens.len() {
-    //         let token_type = &self.tokens[self.current + 1].ttype;
-    //         return Some(token_type);
-    //     }
-    //     None
-    // }
+    pub fn peek_next_token_type(&self) -> Option<&TokenType> {
+        if self.current + 1 < self.tokens.len() {
+            let token_type = &self.tokens[self.current + 1].ttype;
+            return Some(token_type);
+        }
+        None
+    }
 
     pub fn token_bp(&self) -> Option<&PREC> {
         if self.current + 1 < self.tokens.len() {

@@ -57,32 +57,47 @@ pub type StmtHandler = fn(&mut Parser) -> Stmt;
 
 pub fn create_nud_lookups() -> HashMap<TokenType, NudHandler> {
     let mut map = HashMap::new();
+
+    // Literals & Symbols
     map.insert(TokenType::NUMBER, parse_num as NudHandler);
     map.insert(TokenType::STRING, parse_string as NudHandler);
     map.insert(TokenType::IDENTIFIER, parse_identifier as NudHandler);
+
+    // Unary/Prefix
     map.insert(TokenType::MINUS, parse_unary as NudHandler);
     map.insert(TokenType::BANG, parse_unary as NudHandler);
+
+    // Grouping Expr
     map.insert(TokenType::LEFTPAREN, parse_grouping_expr as NudHandler);
     map
 }
 
 pub fn create_led_lookups() -> HashMap<TokenType, LedHandler> {
     let mut map = HashMap::new();
+
+    //Assignment
+    map.insert(TokenType::EQUAL, parse_assignment_expr as LedHandler);
+    map.insert(TokenType::PLUSEQUALS, parse_assignment_expr as LedHandler);
+    map.insert(TokenType::MINUSEQUALS, parse_assignment_expr as LedHandler);
+
+    // Logical
+    map.insert(TokenType::AND, parse_binary_expr as LedHandler);
+    map.insert(TokenType::OR, parse_binary_expr as LedHandler);
+
+    // Relational
+    map.insert(TokenType::GREATER, parse_binary_expr as LedHandler);
+    map.insert(TokenType::LESS, parse_binary_expr as LedHandler);
+    map.insert(TokenType::LESSEQUAL, parse_binary_expr as LedHandler);
+    map.insert(TokenType::GREATEREQUAL, parse_binary_expr as LedHandler);
+
+    //Additive & Multiplicative
     map.insert(TokenType::PLUS, parse_binary_expr as LedHandler);
     map.insert(TokenType::MINUS, parse_binary_expr as LedHandler);
     map.insert(TokenType::STAR, parse_binary_expr as LedHandler);
     map.insert(TokenType::SLASH, parse_binary_expr as LedHandler);
     map.insert(TokenType::MODULO, parse_binary_expr as LedHandler);
     map.insert(TokenType::POW, parse_binary_expr as LedHandler);
-    map.insert(TokenType::EQUAL, parse_assignment_expr as LedHandler);
-    map.insert(TokenType::PLUSEQUALS, parse_assignment_expr as LedHandler);
-    map.insert(TokenType::MINUSEQUALS, parse_assignment_expr as LedHandler);
-    map.insert(TokenType::AND, parse_binary_expr as LedHandler);
-    map.insert(TokenType::OR, parse_binary_expr as LedHandler);
-    map.insert(TokenType::GREATER, parse_binary_expr as LedHandler);
-    map.insert(TokenType::LESS, parse_binary_expr as LedHandler);
-    map.insert(TokenType::LESSEQUAL, parse_binary_expr as LedHandler);
-    map.insert(TokenType::GREATEREQUAL, parse_binary_expr as LedHandler);
+
     map
 }
 
@@ -91,6 +106,9 @@ pub fn create_stmt_lookups() -> HashMap<TokenType, StmtHandler> {
 
     // Populate the map
     map.insert(TokenType::LET, parse_var_decl_stmt as StmtHandler);
+    map.insert(TokenType::CONST, parse_var_decl_stmt as StmtHandler);
+
+    map.insert(TokenType::LEFTBRACE, parse_block_stmt as StmtHandler);
 
     map
 }
@@ -193,4 +211,28 @@ fn parse_var_decl_stmt(parser: &mut Parser) -> Stmt {
         assignedValue: assignment_value.unwrap(),
         explicitType: explicit_type,
     }
+}
+
+fn parse_block_stmt(parser: &mut Parser) -> Stmt {
+    // parser.expect(TokenType::LEFTBRACE);
+    parser.advance();
+    let mut body: Vec<Stmt> = Vec::new();
+
+    while !parser.is_eof() && parser.at().ttype != TokenType::RIGHTBRACE {
+        body.push(parser.parse_stmt());
+    }
+    parser.expect(TokenType::RIGHTBRACE);
+
+    return Stmt::BlockStmt { Body: body };
+}
+
+fn parse_if_stmt(parser: &mut Parser) -> Stmt {
+    parser.advance();
+    let condition = parser.parse_expr(PREC::Assignment);
+    let consequent = parser.parse_stmt();
+
+    return Stmt::IfStmt {
+        condition,
+        consequent,
+    };
 }
