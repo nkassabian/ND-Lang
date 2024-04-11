@@ -6,7 +6,6 @@ mod errors {
 }
 use parser::parser::Parser;
 use scanner::scanner::Scanner;
-
 mod tokens {
     pub(crate) mod token;
     pub(crate) mod token_type;
@@ -17,7 +16,7 @@ mod ast {
 }
 
 mod parser {
-    pub(crate) mod expressions;
+    pub(crate) mod helpers;
     pub(crate) mod lookups;
     pub(crate) mod parser;
 }
