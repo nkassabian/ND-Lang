@@ -9,16 +9,14 @@ use super::{
 };
 
 pub fn parse_num(parser: &mut Parser) -> Expr {
-    let token = parser.at().clone();
-    parser.advance();
+    let token = parser.advance_and_get_current();
     // Implementation
     Expr::Number(token.lexeme.to_string())
 }
 
 pub fn parse_string(parser: &mut Parser) -> Expr {
     // Implementation
-    let token = parser.at().clone();
-    parser.advance();
+    let token = parser.advance_and_get_current();
     // Implementation
     Expr::String(token.lexeme.to_string())
 }
@@ -36,8 +34,7 @@ pub fn parse_assignment_expr(parser: &mut Parser, left: Expr) -> Expr {
 
 pub fn parse_identifier(parser: &mut Parser) -> Expr {
     // Implementation
-    let token = parser.at().clone();
-    parser.advance();
+    let token = parser.advance_and_get_current();
     // Implementation
     Expr::Identifier(token.lexeme.to_string())
 }
@@ -52,8 +49,7 @@ pub fn parse_grouping_expr(parser: &mut Parser) -> Expr {
 }
 
 pub fn parse_unary(parser: &mut Parser) -> Expr {
-    let op = parser.at().clone();
-    parser.advance();
+    let op = parser.advance_and_get_current();
 
     let right = parser.parse_expr(*unsafe { BP_TABLE.get(&op.ttype).unwrap() });
     Expr::Unary {
@@ -63,8 +59,7 @@ pub fn parse_unary(parser: &mut Parser) -> Expr {
 }
 
 pub fn parse_binary_expr(parser: &mut Parser, left: Expr) -> Expr {
-    let op = parser.at().clone();
-    parser.advance();
+    let op = parser.advance_and_get_current();
 
     let right = parser.parse_expr(*unsafe { BP_TABLE.get(&op.ttype).unwrap() });
     Expr::BinaryOp {
@@ -74,7 +69,6 @@ pub fn parse_binary_expr(parser: &mut Parser, left: Expr) -> Expr {
     }
 }
 
-//TODO: Make function that increments current, and returns the current before the incrementation.
 pub fn parse_var_decl_stmt(parser: &mut Parser) -> Stmt {
     let start_token = parser.advance_and_get_current();
     let is_constant = start_token.clone().ttype == TokenType::CONST;
