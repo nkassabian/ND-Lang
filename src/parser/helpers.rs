@@ -48,10 +48,11 @@ pub fn parse_grouping_expr(parser: &mut Parser) -> Expr {
     }
 }
 
+// BUG: Unary not working properly
 pub fn parse_unary(parser: &mut Parser) -> Expr {
     let op = parser.advance_and_get_current();
 
-    let right = parser.parse_expr(*unsafe { BP_TABLE.get(&op.ttype).unwrap() });
+    let right = parser.parse_expr(PREC::Prefix);
     Expr::Unary {
         op,
         right: Box::new(right),
@@ -112,7 +113,7 @@ pub fn parse_block_stmt(parser: &mut Parser) -> Stmt {
     }
     parser.expect(TokenType::RIGHTBRACE);
 
-    return Stmt::BlockStmt { Body: body };
+    Stmt::BlockStmt { Body: body }
 }
 
 pub fn parse_if_stmt(parser: &mut Parser) -> Stmt {

@@ -1,7 +1,6 @@
 use core::fmt;
-use std::{fmt::write, string};
 
-use crate::tokens::{token::Token, token_type::TokenType};
+use crate::tokens::token::Token;
 
 use super::expr::Expr;
 

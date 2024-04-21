@@ -27,6 +27,7 @@ impl Parser {
         }
     }
 
+    ///Starts to parse the tokens inside our Parser
     pub fn parse(&mut self) -> Vec<Stmt> {
         self.tokens.pop(); // Assuming popping the last token is intentional
         let mut statements = Vec::new(); // Collect parsed statements

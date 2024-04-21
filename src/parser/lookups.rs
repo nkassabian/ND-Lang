@@ -21,6 +21,7 @@ pub enum PREC {
     Multiplicative = 7,
     Power = 8,
     Unary = 9,
+    Prefix = 10,
     // Call,
     // Member,
     Group = 12,
@@ -28,25 +29,45 @@ pub enum PREC {
 
 pub static mut BP_TABLE: Lazy<HashMap<TokenType, PREC>> = Lazy::new(|| {
     let mut map = HashMap::new();
+
+    //Assignment
     map.insert(TokenType::EQUAL, PREC::Assignment);
     map.insert(TokenType::PLUSEQUALS, PREC::Assignment);
     map.insert(TokenType::MINUSEQUALS, PREC::Assignment);
+
+    //Primary
     map.insert(TokenType::NUMBER, PREC::Primary);
     map.insert(TokenType::STRING, PREC::Primary);
     map.insert(TokenType::IDENTIFIER, PREC::Primary);
+
+    //Additive
     map.insert(TokenType::PLUS, PREC::Additive);
     map.insert(TokenType::MINUS, PREC::Additive);
+
+    //Multiplicative
     map.insert(TokenType::STAR, PREC::Multiplicative);
     map.insert(TokenType::SLASH, PREC::Multiplicative);
     map.insert(TokenType::MODULO, PREC::Multiplicative);
+
+    //Relational
     map.insert(TokenType::LESS, PREC::Relational);
     map.insert(TokenType::GREATER, PREC::Relational);
     map.insert(TokenType::LESSEQUAL, PREC::Relational);
     map.insert(TokenType::GREATEREQUAL, PREC::Relational);
+
+    //Logical
     map.insert(TokenType::OR, PREC::Logical);
+
+    //Power
     map.insert(TokenType::POW, PREC::Power);
+
+    //Unary
     map.insert(TokenType::BANG, PREC::Unary);
+
+    //Group
     map.insert(TokenType::LEFTPAREN, PREC::Group);
+
+    //Default
     map.insert(TokenType::EOF, PREC::DefaultBp);
     map
 });

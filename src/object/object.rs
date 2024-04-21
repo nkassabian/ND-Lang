@@ -1,9 +1,8 @@
 use core::fmt;
 
-// TODO: Seprate floating point with int
 #[derive(Debug, Clone, PartialEq)]
 pub enum Object {
-    Num(String), //TODO: Make generic
+    Num(String),
     Str(String),
     Bool(bool),
     Nil,

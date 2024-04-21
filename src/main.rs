@@ -1,6 +1,5 @@
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
-use std::result;
 mod errors {
     pub(crate) mod lexer_error;
 }
