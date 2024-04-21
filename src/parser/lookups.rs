@@ -126,8 +126,8 @@ pub fn create_stmt_lookups() -> HashMap<TokenType, StmtHandler> {
     let mut map = HashMap::new();
 
     // Populate the map
-    map.insert(TokenType::LET, parse_var_decl_stmt as StmtHandler);
-    map.insert(TokenType::CONST, parse_var_decl_stmt as StmtHandler);
+    //map.insert(TokenType::LET, parse_var_decl_stmt as StmtHandler);
+    //map.insert(TokenType::CONST, parse_var_decl_stmt as StmtHandler);
 
     map.insert(TokenType::LEFTBRACE, parse_block_stmt as StmtHandler);
     map.insert(TokenType::IF, parse_if_stmt as StmtHandler);

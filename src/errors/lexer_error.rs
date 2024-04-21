@@ -14,8 +14,8 @@ pub struct LexerError {
 pub enum LexerErrorTypes {
     UnexpectedEndOfString,
     UnexpectedCharacter(char),
-    InvalidFloatingPoint(),
-    InvalidNumber(String),
+    //InvalidFloatingPoint(),
+    //InvalidNumber(String),
 }
 
 impl LexerError {
@@ -33,10 +33,6 @@ impl LexerError {
             LexerErrorTypes::UnexpectedCharacter(c) => {
                 format!("error[E2503] Unexpected character '{}'", c)
             }
-            LexerErrorTypes::InvalidFloatingPoint() => {
-                format!("error[E2504] Invalid floating point.")
-            }
-            LexerErrorTypes::InvalidNumber(s) => format!("Invalid number '{}'", s),
         };
         LexerError {
             error_type,
@@ -53,10 +49,6 @@ impl LexerError {
             LexerErrorTypes::UnexpectedCharacter(c) => {
                 format!("Tip: Try to remove or replace this character: {}.", c)
             }
-            LexerErrorTypes::InvalidFloatingPoint() => {
-                format!("Floating point should have a digit after it. \n ")
-            }
-            LexerErrorTypes::InvalidNumber(s) => format!("Invalid number '{}'", s),
         };
     }
     // [src/test.ql->1:20::Unexpected token found. of type: ;

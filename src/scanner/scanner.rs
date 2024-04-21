@@ -414,7 +414,7 @@ impl Scanner {
                 '"' => self.string()?,
                 _ => {
                     if self.is_digit(c) {
-                        self.number();
+                        let _ = self.number();
                     } else if self.is_alpha(c) {
                         self.identifier();
                     } else if c == '\n' || c == '\r' || c == '\r' {

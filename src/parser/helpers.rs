@@ -48,7 +48,6 @@ pub fn parse_grouping_expr(parser: &mut Parser) -> Expr {
     }
 }
 
-// BUG: Unary not working properly
 pub fn parse_unary(parser: &mut Parser) -> Expr {
     let op = parser.advance_and_get_current();
 
@@ -70,39 +69,6 @@ pub fn parse_binary_expr(parser: &mut Parser, left: Expr) -> Expr {
     }
 }
 
-pub fn parse_var_decl_stmt(parser: &mut Parser) -> Stmt {
-    let start_token = parser.advance_and_get_current();
-    let is_constant = start_token.clone().ttype == TokenType::CONST;
-    let symbol_name = parser.advance_and_get_current().clone();
-
-    let explicit_type = if parser.at().ttype == TokenType::COLON {
-        parser.expect(TokenType::COLON);
-        Some(parser.advance_and_get_current())
-    } else {
-        None
-    };
-
-    let assignment_value = if parser.at().ttype != TokenType::SEMICOLON {
-        parser.expect(TokenType::EQUAL);
-        Some(parser.parse_expr(PREC::Assignment))
-    } else {
-        None
-    };
-
-    parser.expect(TokenType::SEMICOLON);
-
-    if is_constant && assignment_value.is_none() {
-        panic!("Cannot define constant variable without providing default value.")
-    }
-
-    Stmt::VarDeclarationStmt {
-        isConstant: is_constant,
-        Identifier: symbol_name.lexeme,
-        assignedValue: assignment_value.unwrap(),
-        explicitType: explicit_type,
-    }
-}
-
 pub fn parse_block_stmt(parser: &mut Parser) -> Stmt {
     // parser.expect(TokenType::LEFTBRACE);
     parser.advance();
@@ -113,22 +79,25 @@ pub fn parse_block_stmt(parser: &mut Parser) -> Stmt {
     }
     parser.expect(TokenType::RIGHTBRACE);
 
-    Stmt::BlockStmt { Body: body }
+    Stmt::BlockStmt { body }
 }
 
+// TODO: Add else if
 pub fn parse_if_stmt(parser: &mut Parser) -> Stmt {
     parser.advance();
     let condition = parser.parse_expr(PREC::Assignment);
     let consequent = parser.parse_stmt();
     let mut alternate = None; // Initialize alternate with None
 
-    if parser.at().ttype == TokenType::ELSE {
-        parser.advance();
+    if !parser.is_eof() {
+        if parser.at().ttype == TokenType::ELSE {
+            parser.advance();
 
-        if parser.at().ttype == TokenType::IF {
-            alternate = Some(Box::new(parse_if_stmt(parser))); // Use Some() to wrap the alternate value
-        } else {
-            alternate = Some(Box::new(parse_block_stmt(parser))); // Use Some() to wrap the alternate value
+            if parser.at().ttype == TokenType::IF {
+                alternate = Some(Box::new(parse_if_stmt(parser))); // Use Some() to wrap the alternate value
+            } else {
+                alternate = Some(Box::new(parse_block_stmt(parser))); // Use Some() to wrap the alternate value
+            }
         }
     }
 

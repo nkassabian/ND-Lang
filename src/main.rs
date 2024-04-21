@@ -1,3 +1,9 @@
+// TODO: Create lexer errors
+// TODO: Create parser errors
+// TODO: Create scanner errors
+// TODO: Create interpreter errors
+// BUG: If statement not working
+
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 mod errors {

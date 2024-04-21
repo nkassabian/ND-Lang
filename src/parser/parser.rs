@@ -3,7 +3,7 @@ use super::lookups::{
     StmtHandler, BP_TABLE, PREC,
 };
 use crate::ast::expr::Expr;
-use crate::ast::stmt::{self, Stmt};
+use crate::ast::stmt::Stmt;
 use crate::tokens::token::Token;
 use crate::tokens::token_type::TokenType;
 use std::collections::HashMap;
@@ -56,7 +56,6 @@ impl Parser {
     ///Starts to parse the tokens inside our Parser
     pub fn parse_expr(&mut self, bp: PREC) -> Expr {
         let token = self.at().clone();
-
         let mut left = self.nud_lookup.get(&token.ttype).unwrap()(self);
         while !self.is_eof() && self.token_bp().map_or(false, |&next_bp| next_bp >= bp) {
             left = self.led_lookup.get(&self.at().ttype).unwrap()(self, left);
@@ -64,14 +63,7 @@ impl Parser {
         left
     }
 
-    pub fn peek_next_token_type(&self) -> Option<&TokenType> {
-        if self.current + 1 < self.tokens.len() {
-            let token_type = &self.tokens[self.current + 1].ttype;
-            return Some(token_type);
-        }
-        None
-    }
-
+    ///Get the precedence of the current token
     pub fn token_bp(&self) -> Option<&PREC> {
         if self.current + 1 < self.tokens.len() {
             let token_type = &self.tokens[self.current].ttype;
@@ -80,24 +72,29 @@ impl Parser {
         None
     }
 
+    ///Checks if we are at the end of the file
     pub fn is_eof(&self) -> bool {
         self.current >= self.tokens.len()
     }
 
+    ///Advances the current position
     pub fn advance(&mut self) {
         self.current += 1;
     }
 
+    ///Returns the current token
     pub fn at(&self) -> &Token {
         &self.tokens[self.current]
     }
 
+    ///Returns the current token and advances
     pub fn advance_and_get_current(&mut self) -> Token {
         let current = self.at().clone();
         self.advance();
         return current;
     }
 
+    ///Expects the current token to be of the given type
     pub fn expect(&mut self, expected_type: TokenType) {
         if self.at().ttype != expected_type {
             panic!("Expected token of type {:?}", expected_type);
