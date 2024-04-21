@@ -29,13 +29,11 @@ impl Parser {
 
     ///Starts to parse the tokens inside our Parser
     pub fn parse(&mut self) -> Vec<Stmt> {
-        self.tokens.pop(); // Assuming popping the last token is intentional
-        let mut statements = Vec::new(); // Collect parsed statements
+        self.tokens.pop();
+        let mut statements = Vec::new();
         while !self.is_eof() {
             statements.push(self.parse_stmt());
         }
-        // Return the last parsed statement, assuming that's the intended behavior
-        // You might want to return a list of statements instead
         statements
     }
 

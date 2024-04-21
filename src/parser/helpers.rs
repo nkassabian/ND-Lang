@@ -82,7 +82,6 @@ pub fn parse_block_stmt(parser: &mut Parser) -> Stmt {
     Stmt::BlockStmt { body }
 }
 
-// TODO: Add else if
 pub fn parse_if_stmt(parser: &mut Parser) -> Stmt {
     parser.advance();
     let condition = parser.parse_expr(PREC::Assignment);
@@ -105,5 +104,38 @@ pub fn parse_if_stmt(parser: &mut Parser) -> Stmt {
         condition,
         consequent: Box::new(consequent),
         alternate, // Use the initialized alternate value
+    }
+}
+
+pub fn parse_var_decl_stmt(parser: &mut Parser) -> Stmt {
+    let start_token = parser.advance_and_get_current();
+    let is_constant = start_token.clone().ttype == TokenType::CONST;
+    let symbol_name = parser.advance_and_get_current().clone();
+
+    let explicit_type = if parser.at().ttype == TokenType::COLON {
+        parser.expect(TokenType::COLON);
+        Some(parser.advance_and_get_current())
+    } else {
+        None
+    };
+
+    let assignment_value = if parser.at().ttype != TokenType::SEMICOLON {
+        parser.expect(TokenType::EQUAL);
+        Some(parser.parse_expr(PREC::Assignment))
+    } else {
+        None
+    };
+
+    parser.expect(TokenType::SEMICOLON);
+
+    if is_constant && assignment_value.is_none() {
+        panic!("Cannot define constant variable without providing default value.")
+    }
+
+    Stmt::VarDeclarationStmt {
+        isConstant: is_constant,
+        identifier: symbol_name.lexeme,
+        assignedValue: assignment_value.unwrap(),
+        explicitType: explicit_type,
     }
 }

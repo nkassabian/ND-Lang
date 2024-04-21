@@ -1,5 +1,7 @@
 use core::fmt;
 
+use crate::tokens::token::Token;
+
 use super::expr::Expr;
 
 pub enum Stmt {
@@ -13,6 +15,12 @@ pub enum Stmt {
         condition: Expr,
         consequent: Box<Stmt>,
         alternate: Option<Box<Stmt>>,
+    },
+    VarDeclarationStmt {
+        identifier: String,
+        isConstant: bool,
+        assignedValue: Expr,
+        explicitType: Option<Token>,
     },
 }
 
@@ -38,9 +46,32 @@ impl fmt::Display for Stmt {
                 writeln!(f, "    Condition: {}", condition)?;
                 writeln!(f, "    Consequent: {}", consequent)?;
                 if alternate.is_some() {
-                    writeln!(f, "{}", Some(alternate).unwrap().as_ref().unwrap())?;
+                    writeln!(
+                        f,
+                        "Alternate: {}",
+                        Some(alternate).unwrap().as_ref().unwrap()
+                    )?;
                 }
                 Ok(())
+            }
+            Stmt::VarDeclarationStmt {
+                identifier,
+                isConstant,
+                assignedValue,
+                explicitType,
+            } => {
+                write!(
+                    f,
+                    "let {}{}{} = {}",
+                    if *isConstant { "const " } else { "" },
+                    identifier,
+                    if let Some(explicitType) = explicitType {
+                        format!(": of type {}", explicitType.lexeme)
+                    } else {
+                        String::new()
+                    },
+                    assignedValue
+                )
             }
         }
     }
