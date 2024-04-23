@@ -40,9 +40,9 @@ pub fn parse_identifier(parser: &mut Parser) -> Expr {
 }
 
 pub fn parse_grouping_expr(parser: &mut Parser) -> Expr {
-    parser.expect(TokenType::LEFTPAREN);
+    parser.expect(TokenType::LEFTPAREN, '(');
     let group = parser.parse_expr(PREC::DefaultBp);
-    parser.expect(TokenType::RIGHTPAREN);
+    parser.expect(TokenType::RIGHTPAREN, ')');
     Expr::Grouping {
         group: Box::new(group),
     }
@@ -77,7 +77,7 @@ pub fn parse_block_stmt(parser: &mut Parser) -> Stmt {
     while !parser.is_eof() && parser.at().ttype != TokenType::RIGHTBRACE {
         body.push(parser.parse_stmt());
     }
-    parser.expect(TokenType::RIGHTBRACE);
+    parser.expect(TokenType::RIGHTBRACE, ']');
 
     Stmt::BlockStmt { body }
 }
@@ -113,20 +113,20 @@ pub fn parse_var_decl_stmt(parser: &mut Parser) -> Stmt {
     let symbol_name = parser.advance_and_get_current().clone();
 
     let explicit_type = if parser.at().ttype == TokenType::COLON {
-        parser.expect(TokenType::COLON);
+        parser.expect(TokenType::COLON, ':');
         Some(parser.advance_and_get_current())
     } else {
         None
     };
 
     let assignment_value = if parser.at().ttype != TokenType::SEMICOLON {
-        parser.expect(TokenType::EQUAL);
+        parser.expect(TokenType::EQUAL, '=');
         Some(parser.parse_expr(PREC::Assignment))
     } else {
         None
     };
 
-    parser.expect(TokenType::SEMICOLON);
+    parser.expect(TokenType::SEMICOLON, ':');
 
     if is_constant && assignment_value.is_none() {
         panic!("Cannot define constant variable without providing default value.")

@@ -9,6 +9,10 @@ use std::io::{self, stdout, BufRead, Write};
 mod errors {
     pub(crate) mod error;
 }
+mod interpreter {
+    pub(crate) mod interpreter;
+}
+use interpreter::interpreter::Interpreter;
 use parser::parser::Parser;
 use scanner::scanner::Scanner;
 mod tokens {
@@ -77,13 +81,23 @@ impl Cedar {
 
         // let expr = parse(tokens.unwrap().clone());
 
-        let mut parser = Parser::new(tokens.unwrap().clone());
-        let result = parser.parse();
-
-        for res in result {
-            println!("{}", res);
+        //Stream token into parser
+        // HACK: MAKE THIS MORE EFFICIENT
+        let mut parser_toks = Vec::new();
+        for token in tokens.unwrap().clone() {
+            if (token.ttype != tokens::token_type::TokenType::EOF) {
+                parser_toks.push(token);
+            }
         }
 
+        // let parser = Parser::new(tokens.unwrap().clone());
+
+        let mut parser = Parser::new(parser_toks);
+        let result = parser.parse();
+
+        let interpreter = Interpreter::new(result);
+        let x<u32> = interpreter.interpret();
+        println!("{}", x);
         Ok(())
 
         // match parser.parse() {

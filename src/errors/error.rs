@@ -17,5 +17,6 @@ impl Error {
 
     pub fn report(&self) {
         println!("[{}::{}] {}", self.line, self.position, self.message);
+        println!("{}", self.tip);
     }
 }

@@ -30,7 +30,7 @@ impl Parser {
 
     ///Starts to parse the tokens inside our Parser
     pub fn parse(&mut self) -> Vec<Stmt> {
-        self.tokens.pop();
+        //self.tokens.pop();
         let mut statements = Vec::new();
         while !self.is_eof() {
             statements.push(self.parse_stmt());
@@ -38,6 +38,12 @@ impl Parser {
         statements
     }
 
+    ///Starts to parse the tokens inside our Parser
+    ///
+    /// #Example
+    /// ```rust
+    /// let mut parser = Parser::new(tokens),
+    /// ```
     pub fn parse_stmt(&mut self) -> Stmt {
         let stmt_fn = self.stmt_lookup.get(&self.at().ttype);
 
@@ -46,7 +52,7 @@ impl Parser {
         } else {
             let expression = self.parse_expr(PREC::DefaultBp);
 
-            self.expect(TokenType::SEMICOLON);
+            self.expect(TokenType::SEMICOLON, ';');
 
             return Stmt::ExpressionStmt { expression };
         }
@@ -55,8 +61,9 @@ impl Parser {
     ///Starts to parse the tokens inside our Parser
     pub fn parse_expr(&mut self, bp: PREC) -> Expr {
         let token = self.at().clone();
+
         let mut left = self.nud_lookup.get(&token.ttype).unwrap()(self);
-        while !self.is_eof() && self.token_bp().map_or(false, |&next_bp| next_bp >= bp) {
+        while self.token_bp().map_or(false, |&next_bp| next_bp >= bp) {
             left = self.led_lookup.get(&self.at().ttype).unwrap()(self, left);
         }
         left
@@ -73,12 +80,15 @@ impl Parser {
 
     ///Checks if we are at the end of the file
     pub fn is_eof(&self) -> bool {
-        self.current >= self.tokens.len()
+        self.current + 1 > self.tokens.len()
     }
 
     ///Advances the current position
     pub fn advance(&mut self) {
-        self.current += 1;
+        if !self.is_eof() {
+            self.current += 1;
+        }
+        self.current;
     }
 
     ///Returns the current token
@@ -94,17 +104,21 @@ impl Parser {
     }
 
     ///Expects the current token to be of the given type
-    pub fn expect(&mut self, expected_type: TokenType) {
+    pub fn expect(&mut self, expected_type: TokenType, expected_char: char) {
         if self.at().ttype != expected_type {
             let error = Error::new(
                 self.at().position,
                 self.at().line,
-                format!("Expected token of type {:?}", expected_type),
-                format!("Found token of type {:?}", self.at().ttype),
+                format!(
+                    "Expected token of type \"{}\" but found \"{}\"",
+                    expected_char.to_string(),
+                    self.at().lexeme
+                ),
+                "".to_string(),
             );
 
             error.report();
-            std::process::exit(65);
+            //std::process::exit(65);
         }
         self.advance();
     }
