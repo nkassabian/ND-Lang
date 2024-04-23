@@ -4,6 +4,7 @@ use super::lookups::{
 };
 use crate::ast::expr::Expr;
 use crate::ast::stmt::Stmt;
+use crate::errors::error::Error;
 use crate::tokens::token::Token;
 use crate::tokens::token_type::TokenType;
 use std::collections::HashMap;
@@ -95,7 +96,15 @@ impl Parser {
     ///Expects the current token to be of the given type
     pub fn expect(&mut self, expected_type: TokenType) {
         if self.at().ttype != expected_type {
-            panic!("Expected token of type {:?}", expected_type);
+            let error = Error::new(
+                self.at().position,
+                self.at().line,
+                format!("Expected token of type {:?}", expected_type),
+                format!("Found token of type {:?}", self.at().ttype),
+            );
+
+            error.report();
+            std::process::exit(65);
         }
         self.advance();
     }

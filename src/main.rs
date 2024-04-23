@@ -7,7 +7,7 @@
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 mod errors {
-    pub(crate) mod lexer_error;
+    pub(crate) mod error;
 }
 use parser::parser::Parser;
 use scanner::scanner::Scanner;

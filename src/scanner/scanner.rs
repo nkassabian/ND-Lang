@@ -1,11 +1,12 @@
-use crate::errors::lexer_error::LexerError;
-use crate::errors::lexer_error::LexerErrorTypes;
-// use crate::tokens::token_type::TokenType;
-use crate::tokens::token::Token;
-use crate::tokens::token::KEYWORDS;
-use crate::tokens::token_type::*;
+// use crate::tokens::token_type::TokenTy
 
-use crate::object::object::*;
+use crate::{
+    object::object::Object,
+    tokens::{
+        token::{Token, KEYWORDS},
+        token_type::TokenType,
+    },
+};
 
 pub struct Scanner {
     source: Vec<char>,
@@ -42,7 +43,6 @@ impl Scanner {
             match self.scan_token() {
                 Ok(_) => {}
                 Err(err) => {
-                    err.report();
                     break;
                 }
             }
@@ -211,7 +211,7 @@ impl Scanner {
     ///
     /// Increments the `line` counter and resets the `offset` to 0.
     // TODO: Add check for new line
-    fn string(&mut self) -> Result<(), LexerError> {
+    fn string(&mut self) -> Result<(), ()> {
         self.next();
         while !self.peek('"') && !self.is_eof() {
             self.next();
@@ -220,13 +220,7 @@ impl Scanner {
             }
         }
         if self.is_eof() {
-            return Err(LexerError::new(
-                self.line,
-                self.offset,
-                LexerErrorTypes::UnexpectedEndOfString,
-                self.file_name.clone(),
-                self.source.clone(),
-            ));
+            // TODO: Add error
         }
 
         self.next();
@@ -385,7 +379,7 @@ impl Scanner {
         self.position += 1;
         self.offset += 1;
     }
-    fn scan_token(&mut self) -> Result<(), LexerError> {
+    fn scan_token(&mut self) -> Result<(), ()> {
         while !self.is_eof() {
             let c = self.at();
             self.current = self.position;
@@ -420,13 +414,7 @@ impl Scanner {
                     } else if c == '\n' || c == '\r' || c == '\r' {
                         self.empty_next();
                     } else {
-                        return Err(LexerError::new(
-                            self.line,
-                            self.offset,
-                            LexerErrorTypes::UnexpectedCharacter(c),
-                            self.file_name.clone(),
-                            self.source.clone(),
-                        ));
+                        // TODO: Add error
                     }
                 }
             }
