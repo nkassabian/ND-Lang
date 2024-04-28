@@ -95,9 +95,6 @@ impl Cedar {
         let mut parser = Parser::new(parser_toks);
         let result = parser.parse();
 
-        let interpreter = Interpreter::new(result);
-        let x<u32> = interpreter.interpret();
-        println!("{}", x);
         Ok(())
 
         // match parser.parse() {
